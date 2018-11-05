@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script crossorigin src='https://unpkg.com/react@16/umd/react.development.js'></script>
+    <script crossorigin src='https://unpkg.com/react-dom@16/umd/react-dom.development.js'></script>
+    <script crossorigin src="https://unpkg.com/babel-standalone@6.26.0/babel.min.js"></script>
+</head>
+<body>
+    <div id="app"></div>
+
+    <script>
+        // let data = window.API.fetchPopularRepos()
+            window.API = {
+              fetchPopularRepos(language = 'all') {
+                  console.log("fecthPopularRepos")
+                const encodedURI = encodeURI(`https://api.github.com/search/repositories?q=stars:>1+language:${language}&sort=stars&order=desc&type=Repositories`)
+                return fetch(encodedURI)
+                  .then((data) => {
+                    //   console.log(333333,data)
+                      return data.json()
+                    })
+                  .then((repos) => { 
+                    //   console.log(9999,repos.items)
+                      return repos.items})
+                  .catch((error) => {
+                    console.warn(error)
+                    return null
+                  });
+              }
+            }
+    </script>
+
+    <script type='text/babel'>
+
+
+        
+
+        const students = [  { name: 'mo', present: true },
+                            { name: 'mew', present: true },
+                            { name: 'non', present: true}]
+
+       
+        function AddStudentForm({inputStudentValue, onAddStudent, onChangeInput}) {
+            return (
+                <form onSubmit={(e)=>onAddStudent(e)}>
+                    <input type='text' name='student' placeholder='Student name' value={inputStudentValue} onChange={(e)=>onChangeInput(e)}/>
+                    <input type='submit' value='Add Student' /> 
+                </form>
+            )
+        }
+        
+        // function ClassRoomLists({students, onRemoveStudent, onTogglePresent}) {
+        //     console.log(222,students)
+        //     return (
+        //         <ul>
+        //             { 
+        //                 students.map((student, index) => (
+        //                     <li key={index}>
+        //                         {student.name}  |  Present: {student.present.toString()}
+        //                         <button onClick={()=>onRemoveStudent(student)}>Remove</button>
+        //                         <button onClick={()=>onTogglePresent(student)}>Toggle Present</button>
+        //                     </li> 
+        //                 ))
+        //             }
+        //         </ul>
+        //     )
+        // }
+
+        class CoursesLists extends React.Component {
+            constructor(props) {
+                super(props)
+            }
+
+            render() {
+                var courses = this.props.courses
+                return (
+                    <form>
+                        {
+                            courses.map((course, index) => {
+                                return (
+
+                                    <label>
+                                        <input  type="radio" 
+                                                value={course.name} 
+                                                checked={this.props.selectedCourseOption == course.name} 
+                                                onChange={this.props.onChangeCourseOption}/>
+                                        {course.name} 
+                                        <br/>
+                                    </label>
+                                   
+                                )
+                            })
+                        }
+                    </form>
+                )
+            }
+        }
+
+        class ClassRoomLists extends React.Component {
+
+            constructor(props) {
+                super(props)
+            }
+
+            componentWillUnmount() {
+                console.log('unmount')
+            }
+
+
+            render() {
+                // console.log(2222222222,this)
+                return (
+                    <ul>
+                        { 
+                            this.props.students.map((student, index) => (
+                                <li key={index}>
+                                    {student.name}  |  Present: {student.present.toString()}
+                                    <button onClick={()=>this.props.onRemoveStudent(student)}>Remove</button>
+                                    <button onClick={()=>this.props.onTogglePresent(student)}>Toggle Present</button>
+                                </li> 
+                            ))
+                        }
+                    </ul>
+                )
+            }
+
+        }
+
+        class App extends React.Component {
+
+            constructor(props) {
+                super(props)
+                this.state = {
+                    students: props.students,
+                    inputStudentValue: '',
+                    notification:'',
+                    courses: [],
+                    selectedCourseOption: ''
+                }
+
+                this.handleRemoveStudent = this.handleRemoveStudent.bind(this)
+                this.handleAddStudent = this.handleAddStudent.bind(this)
+                this.handleChangeInput = this.handleChangeInput.bind(this)
+                this.getRawMarkup = this.getRawMarkup.bind(this)
+                this.handleTogglePresent = this.handleTogglePresent.bind(this)
+                this.handleChangeCourseOption = this.handleChangeCourseOption.bind(this)
+                // console.log(222222,window.API)
+            }
+
+            handleChangeCourseOption(e) {
+                console.log(123456, e.target.value)
+                this.setState({selectedCourseOption: e.target.value})
+                console.log(1234567, this)
+            }
+
+            handleChangeInput(e) {
+                // console.log(3333,e.target.value)
+                var inputStudentValue = e.target.value
+                this.setState({ inputStudentValue })
+            }
+
+            handleAddStudent(e) {
+                e.preventDefault()
+                var currentStudents = this.state.students
+                var inputStudentValue = this.state.inputStudentValue
+                var student = { name: inputStudentValue, present: true }
+                
+                if (inputStudentValue == '') {
+                    this.setState({ notification: 'Please put something'})
+                    return e
+                }
+
+                console.log(444, student)
+                
+                // Check Duplicate Student 
+                var foundDuplicateStudent = false
+                currentStudents.forEach( element => {
+                    if (element.name == student.name) { foundDuplicateStudent = true }
+                })
+
+                if (foundDuplicateStudent) {
+                    this.setState({ notification: 'Duplicate student name'})
+                    this.setState({ inputStudentValue: '' })
+                    return e
+                }
+
+                
+                // Insert student to students array
+                this.setState({ students: [...currentStudents, student]})
+                this.setState({ inputStudentValue: '' })
+                             
+
+            }
+
+            handleTogglePresent(student) {
+                console.log(student)
+
+
+            }
+
+            handleRemoveStudent(student) {
+                console.log(student)
+                console.log(this.state)
+
+                // Normal Way to setState
+                var newStudents = this.state.students.filter((_student) => _student !== student)
+                this.setState({ students: newStudents })
+
+                // setState with function
+                // this.setState((currentState) => {
+                //     return {
+                //         students: currentState.students.filter((_student) => _student !== student)
+                //     }
+                // })
+            }
+
+            getRawMarkup() {
+                
+                return { __html: this.state.notification };
+            }
+
+            componentDidMount() {
+                console.log('Component Mounted')
+                let that = this
+                window.API.fetchPopularRepos().then((results) => {
+                    console.log("this.state.repoData",results)
+                    that.setState({ courses: results})
+                    console.log(that)
+                    return results
+                })
+                // this.setData()
+            }
+
+            componentDidUpdate() {
+                console.log('Component DidUpdate')
+            }
+
+            componentWillUnmount() {
+                console.log('Component WillUnmount')
+            }
+
+            render() {
+                return (
+                    <div>
+                        <ClassRoomLists 
+                            students={this.state.students}
+                            onRemoveStudent={this.handleRemoveStudent}
+                            onTogglePresent={this.handleTogglePresent}/>
+                        <AddStudentForm
+                            inputStudentValue={this.state.inputStudentValue}
+                            onAddStudent={this.handleAddStudent}
+                            onChangeInput={this.handleChangeInput}/>
+
+
+                       
+
+                        <br/>
+                        <div>Notification -> </div>
+                        <div dangerouslySetInnerHTML={this.getRawMarkup()}/>
+                        <br/>
+
+                         <CoursesLists
+                            courses={this.state.courses}
+                            selectedCourseOption={this.state.selectedCourseOption}
+                            onChangeCourseOption={this.handleChangeCourseOption}/>
+                            
+                    </div>
+                )
+            }
+        }
+
+        
+        ReactDOM.render(<App students={students}/>, document.getElementById('app'))
+       
+    </script>
+</body>
+</html>
